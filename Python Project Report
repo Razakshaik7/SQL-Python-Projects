@@ -1,0 +1,68 @@
+Project Title: Real-Time Weather App
+Tools Used: Python and Streamlit
+Prepared By: Abdul Razak
+
+Introduction:
+The main goal of this project is to make a simple web app that shows current weather and 5-day forecast for any city.
+It helps users to know the temperature, humidity, sunrise, sunset, and weather condition in real-time.
+
+Tools and Technologies Used:
+o	Python – main programming language
+o	Streamlit – to build the web app interface
+o	Pandas – to manage and display forecast data
+o	Requests – to connect to the weather API
+o	OpenWeatherMap API – provides live weather data
+o	HTML, CSS, JavaScript – for adding background animation
+
+How the Project Works:
+1.The user enters a city name.
+2.The app sends a request to the OpenWeatherMap API to get weather data.
+3.The data includes temperature, humidity, sunrise/sunset, and forecast.
+4.Using Pandas, the data is displayed neatly and a chart is shown for the 5-day forecast.
+5.The background of the app changes (animated) based on the weather type (rainy, cloudy, sunny).
+
+Features
+o	Shows current weather details (temperature, humidity, sunrise, sunset)
+o	Displays 5-day forecast using a line chart
+o	Background animation changes with weather condition
+o	User can choose between Celsius and Fahrenheit
+o	Simple and interactive interface
+
+Modules in the Project:
+o	Input - User enters city name and temperature unit
+o	API - Fetches live data from OpenWeatherMap
+o	Processing - Organizes data using Pandas
+o	Visualization - Displays data and charts in Streamlit
+o	Animation - Adds weather-based background animation
+
+Sample Output:
+If user enters: London
+Output:
+o	Temperature: 15°C
+o	Humidity: 82%
+o	Sunrise: 06:45 AM
+o	Sunset: 05:30 PM
+o	Weather: Cloudy
+o	Background: Cloud animation
+o	5-day forecast chart shown below the details
+
+Advantages:
+o	Easy to use and understand
+o	Gives real-time weather updates
+o	Interactive and colorful display
+o	Lightweight and runs in any browser
+
+Limitations:
+o	Needs internet connection
+o	API key required from OpenWeatherMap
+o	May not work if API request limit is reached
+
+Future Improvements:
+o	Detect location automatically
+o	Add air quality information
+o	Show weather alerts or warnings
+o	Improve design with more effects
+
+Conclusion:
+This project helped me understand how to use APIs, Pandas, and Streamlit together.
+It is a simple and practical project that shows how data from the internet can be used in real-time to make useful applications.
