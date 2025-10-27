@@ -1,0 +1,190 @@
+import streamlit as st
+import pandas as pd
+import requests
+from datetime import datetime
+
+# -------------------------------
+# CONFIGURATION
+# -------------------------------
+API_KEY = "1df0b17a6cf0b6c3d8f11092664bcb77"  # 🔑 Replace this with your API key
+BASE_URL_CURRENT = "https://api.openweathermap.org/data/2.5/weather"
+BASE_URL_FORECAST = "https://api.openweathermap.org/data/2.5/forecast"
+
+st.set_page_config(page_title="🌦️ Real-Time Weather App", layout="centered")
+
+
+# -------------------------------
+# BACKGROUND ANIMATIONS (CSS)
+# -------------------------------
+def set_animated_background(weather_type):
+    """Injects CSS for different weather animations."""
+    weather_type = weather_type.lower()
+    css = ""
+
+    if "rain" in weather_type:
+        # 🌧️ Rain animation
+        css = """
+        <style>
+        body {
+            background: linear-gradient(#2c3e50, #4ca1af);
+            overflow: hidden;
+        }
+        .raindrop {
+            position: fixed;
+            width: 2px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            bottom: 100%;
+            animation: fall 0.5s linear infinite;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        </style>
+        <script>
+        const numDrops = 100;
+        for (let i = 0; i < numDrops; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'raindrop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDelay = Math.random() + 's';
+            drop.style.animationDuration = 0.5 + Math.random() + 's';
+            document.body.appendChild(drop);
+        }
+        </script>
+        """
+
+    elif "cloud" in weather_type:
+        # ☁️ Cloudy animation
+        css = """
+        <style>
+        body {
+            background: linear-gradient(to bottom, #757f9a, #d7dde8);
+            overflow: hidden;
+        }
+        .cloud {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: moveClouds 60s linear infinite;
+        }
+        @keyframes moveClouds {
+            from { transform: translateX(-200px); }
+            to { transform: translateX(100vw); }
+        }
+        </style>
+        <script>
+        const numClouds = 10;
+        for (let i = 0; i < numClouds; i++) {
+            const cloud = document.createElement('div');
+            cloud.className = 'cloud';
+            cloud.style.width = (100 + Math.random() * 150) + 'px';
+            cloud.style.height = (50 + Math.random() * 80) + 'px';
+            cloud.style.top = (Math.random() * 60) + 'vh';
+            cloud.style.left = (Math.random() * 100) + 'vw';
+            cloud.style.animationDelay = Math.random() * 10 + 's';
+            document.body.appendChild(cloud);
+        }
+        </script>
+        """
+
+    else:
+        # ☀️ Sunny / default animation
+        css = """
+        <style>
+        body {
+            background: linear-gradient(to bottom, #f6d365, #fda085);
+            overflow: hidden;
+        }
+        .sun {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            margin-left: -60px;
+            background: radial-gradient(circle, #fff700 40%, #f39c12 70%);
+            border-radius: 50%;
+            animation: glow 3s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        </style>
+        <div class='sun'></div>
+        """
+
+    st.markdown(css, unsafe_allow_html=True)
+
+# -------------------------------
+# APP UI
+# -------------------------------
+st.title("🌤️ Real-Time Weather App")
+
+city = st.text_input("Enter city name:", "London")
+
+units = st.radio("Select temperature unit:", ("Celsius", "Fahrenheit"))
+unit_param = "metric" if units == "Celsius" else "imperial"
+unit_symbol = "°C" if units == "Celsius" else "°F"
+
+if st.button("Get Weather"):
+    if not API_KEY or API_KEY == "1df0b17a6cf0b6c3d8f11092664bcb77":
+        st.error("⚠️ Please add your OpenWeatherMap API key in the code.")
+    else:
+        # -------------------------------
+        # FETCH CURRENT WEATHER
+        # -------------------------------
+        params_current = {"q": city, "appid": API_KEY, "units": unit_param}
+        res_current = requests.get(BASE_URL_CURRENT, params=params_current)
+        
+        if res_current.status_code == 200:
+            data_current = res_current.json()
+            
+            temp = data_current["main"]["temp"]
+            humidity = data_current["main"]["humidity"]
+            sunrise = datetime.fromtimestamp(data_current["sys"]["sunrise"]).strftime("%H:%M:%S")
+            sunset = datetime.fromtimestamp(data_current["sys"]["sunset"]).strftime("%H:%M:%S")
+            weather_desc = data_current["weather"][0]["description"].capitalize()
+            icon_code = data_current["weather"][0]["icon"]
+            icon_url = f"http://openweathermap.org/img/wn/{icon_code}@2x.png"
+
+            st.markdown(f"### ☁️ {city.title()}")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric(label="Temperature", value=f"{temp:.1f}{unit_symbol}")
+                st.metric(label="Humidity", value=f"{humidity}%")
+            with col2:
+                st.image(icon_url, width=100)
+                st.write(weather_desc)
+            st.write(f"🌅 **Sunrise:** {sunrise}")
+            st.write(f"🌇 **Sunset:** {sunset}")
+
+            # -------------------------------
+            # FETCH 5-DAY FORECAST
+            # -------------------------------
+            params_forecast = {"q": city, "appid": API_KEY, "units": unit_param}
+            res_forecast = requests.get(BASE_URL_FORECAST, params=params_forecast)
+            data_forecast = res_forecast.json()
+
+            forecast_list = data_forecast["list"]
+            forecast_data = {
+                "Date": [item["dt_txt"] for item in forecast_list],
+                "Temp": [item["main"]["temp"] for item in forecast_list],
+                "Humidity": [item["main"]["humidity"] for item in forecast_list],
+                "Weather": [item["weather"][0]["description"] for item in forecast_list],
+            }
+            df_forecast = pd.DataFrame(forecast_data)
+
+            # Convert date string to datetime
+            df_forecast["Date"] = pd.to_datetime(df_forecast["Date"])
+            
+            # Display chart
+            st.markdown("### 📅 5-Day Forecast")
+            st.line_chart(df_forecast.set_index("Date")[["Temp"]])
+
+            # Show sample of forecast data
+            st.dataframe(df_forecast.head(10))
+
+        else:
+            st.error("❌ City not found or API error. Please try again.")
